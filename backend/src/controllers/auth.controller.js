@@ -3,6 +3,13 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/user.model");
 
+const getCookieName = () => process.env.COOKIE_NAME || "token";
+const getCookieOptions = () => ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax"
+});
+
 const createToken = (user) => {
     if (!process.env.JWT_SECRET) {
         throw new Error("JWT_SECRET is not configured");
@@ -55,12 +62,13 @@ const register = async (req, res) => {
             password: hashedPassword,
             role: "user"
         });
+        const token = createToken(user);
+        res.cookie(getCookieName(), token, getCookieOptions());
 
         return res.status(201).json({
             success: true,
             message: "User registered successfully",
-            user: serializeUser(user),
-            token: createToken(user)
+            user: serializeUser(user)
         });
     } catch (error) {
         if (error.name === "ValidationError") {
@@ -107,12 +115,13 @@ const login = async (req, res) => {
                 message: "Invalid email or password"
             });
         }
+        const token = createToken(user);
+        res.cookie(getCookieName(), token, getCookieOptions());
 
         return res.status(200).json({
             success: true,
             message: "Login successful",
-            user: serializeUser(user),
-            token: createToken(user)
+            user: serializeUser(user)
         });
     } catch (error) {
         console.error("Login failed:", error.message);
@@ -147,8 +156,18 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
+const logout = (req, res) => {
+    res.clearCookie(getCookieName(), getCookieOptions());
+
+    return res.status(200).json({
+        success: true,
+        message: "Logout successful"
+    });
+};
+
 module.exports = {
     register,
     login,
-    getCurrentUser
+    getCurrentUser,
+    logout
 };

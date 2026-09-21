@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const Resource = require("../models/resource.model");
 
+const publicStatuses = ["approved", "published"];
 const writableFields = [
     "title",
     "description",
@@ -25,6 +26,9 @@ const getWritableData = (body = {}) => writableFields.reduce((data, field) => {
 }, {});
 
 const isValidResourceId = (id) => mongoose.Types.ObjectId.isValid(id);
+const isResourceOwner = (resource, userId) => (
+    resource.contributorId && resource.contributorId.toString() === userId
+);
 
 const handleError = (res, error, operation) => {
     if (error.name === "ValidationError" || error.name === "CastError") {
@@ -45,7 +49,9 @@ const handleError = (res, error, operation) => {
 
 const listResources = async (req, res) => {
     try {
-        const resources = await Resource.find().sort({ createdAt: -1 });
+        const resources = await Resource.find({
+            status: { $in: publicStatuses }
+        }).sort({ createdAt: -1 });
 
         return res.status(200).json({
             success: true,
@@ -65,7 +71,10 @@ const getResource = async (req, res) => {
     }
 
     try {
-        const resource = await Resource.findById(req.params.id);
+        const resource = await Resource.findOne({
+            _id: req.params.id,
+            status: { $in: publicStatuses }
+        });
 
         if (!resource) {
             return res.status(404).json({
@@ -119,7 +128,7 @@ const updateResource = async (req, res) => {
         }
 
         const isAdmin = req.user.role === "admin";
-        const isOwner = resource.contributorId.toString() === req.user.userId;
+        const isOwner = isResourceOwner(resource, req.user.userId);
 
         if (!isAdmin && !isOwner) {
             return res.status(403).json({
@@ -160,7 +169,7 @@ const deleteResource = async (req, res) => {
         }
 
         const isAdmin = req.user.role === "admin";
-        const isOwner = resource.contributorId.toString() === req.user.userId;
+        const isOwner = isResourceOwner(resource, req.user.userId);
 
         if (!isAdmin && !isOwner) {
             return res.status(403).json({
