@@ -62,6 +62,21 @@ const listResources = async (req, res) => {
     }
 };
 
+const listMyResources = async (req, res) => {
+    try {
+        const resources = await Resource.find({
+            contributorId: req.user.userId
+        }).sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            resources
+        });
+    } catch (error) {
+        return handleError(res, error, "list own resources");
+    }
+};
+
 const getResource = async (req, res) => {
     if (!isValidResourceId(req.params.id)) {
         return res.status(400).json({
@@ -191,6 +206,7 @@ const deleteResource = async (req, res) => {
 
 module.exports = {
     listResources,
+    listMyResources,
     getResource,
     createResource,
     updateResource,
