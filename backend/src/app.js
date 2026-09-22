@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const healthRoutes = require("./routes/health.routes");
 const authRoutes = require("./routes/auth.routes");
 const repositoryRoutes = require("./routes/repository.routes");
+const expeditionRoutes = require("./routes/expedition.routes");
 
 const app = express();
 
@@ -15,5 +16,6 @@ app.use(cookieParser());
 app.use("/api", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/repository", repositoryRoutes);
+app.use("/api/expeditions", expeditionRoutes);
 
 module.exports = app;

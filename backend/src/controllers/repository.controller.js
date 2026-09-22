@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const Resource = require("../models/resource.model");
+const Expedition = require("../models/expedition.model");
 
 const publicStatuses = ["approved", "published"];
 const writableFields = [
@@ -49,9 +50,43 @@ const handleError = (res, error, operation) => {
 
 const listResources = async (req, res) => {
     try {
-        const resources = await Resource.find({
+        const filters = {
             status: { $in: publicStatuses }
-        }).sort({ createdAt: -1 });
+        };
+
+        if (req.query.search) {
+            const search = req.query.search.trim();
+            if (search) {
+                const searchExpression = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+                filters.$or = [
+                    { title: searchExpression },
+                    { description: searchExpression },
+                    { source: searchExpression }
+                ];
+            }
+        }
+
+        if (req.query.type) {
+            filters.type = req.query.type.trim();
+        }
+
+        if (req.query.category) {
+            filters.category = req.query.category.trim();
+        }
+
+        if (req.query.expeditionId) {
+            if (!isValidResourceId(req.query.expeditionId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid expedition ID"
+                });
+            }
+            filters.expeditionId = req.query.expeditionId;
+        }
+
+        const resources = await Resource.find(filters)
+            .populate("expeditionId", "name year date location region description")
+            .sort({ createdAt: -1 });
 
         return res.status(200).json({
             success: true,
@@ -89,7 +124,7 @@ const getResource = async (req, res) => {
         const resource = await Resource.findOne({
             _id: req.params.id,
             status: { $in: publicStatuses }
-        });
+        }).populate("expeditionId", "name year date location region description");
 
         if (!resource) {
             return res.status(404).json({
@@ -109,8 +144,27 @@ const getResource = async (req, res) => {
 
 const createResource = async (req, res) => {
     try {
+        const writableData = getWritableData(req.body);
+
+        if (writableData.expeditionId) {
+            if (!isValidResourceId(writableData.expeditionId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid expedition ID"
+                });
+            }
+
+            const expedition = await Expedition.exists({ _id: writableData.expeditionId });
+            if (!expedition) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Expedition not found"
+                });
+            }
+        }
+
         const resource = await Resource.create({
-            ...getWritableData(req.body),
+            ...writableData,
             contributorId: req.user.userId
         });
 
@@ -152,7 +206,26 @@ const updateResource = async (req, res) => {
             });
         }
 
-        Object.assign(resource, getWritableData(req.body));
+        const writableData = getWritableData(req.body);
+
+        if (writableData.expeditionId) {
+            if (!isValidResourceId(writableData.expeditionId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid expedition ID"
+                });
+            }
+
+            const expedition = await Expedition.exists({ _id: writableData.expeditionId });
+            if (!expedition) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Expedition not found"
+                });
+            }
+        }
+
+        Object.assign(resource, writableData);
         await resource.save();
 
         return res.status(200).json({
