@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Alert, Button, Card, Input, PasswordInput } from '../components/ui'
 import useForm from '../hooks/useForm.js'
 import { register } from '../services/authService.js'
@@ -21,6 +21,7 @@ function validate(values) {
 }
 
 export default function Register() {
+  const navigate = useNavigate()
   const { submitting, submitError, handleSubmit, getFieldProps } = useForm({
     initialValues: { name: '', email: '', password: '', confirmPassword: '' },
     validate,
@@ -31,7 +32,7 @@ export default function Register() {
         email: values.email.trim(),
         password: values.password,
       })
-      // TODO(Iteration 2): handle the new account (auto-login or redirect to /login).
+      navigate('/login', { replace: true, state: { registered: true } })
     },
   })
 

@@ -16,12 +16,11 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body, headers, token, signal } = {}) {
+async function request(path, { method = 'GET', body, headers, signal } = {}) {
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
   const finalHeaders = {
     Accept: 'application/json',
     ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...headers,
   }
 
@@ -30,6 +29,7 @@ async function request(path, { method = 'GET', body, headers, token, signal } = 
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers: finalHeaders,
+      credentials: 'include',
       body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
       signal,
     })

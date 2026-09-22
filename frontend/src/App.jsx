@@ -6,6 +6,10 @@ import Expeditions from './pages/Expeditions.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import NotFound from './pages/NotFound.jsx'
+import Dashboard from './pages/Dashboard.jsx'
+import RepositoryDetail from './pages/RepositoryDetail.jsx'
+import ResourceForm from './pages/ResourceForm.jsx'
+import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 
 export default function App() {
   return (
@@ -16,6 +20,12 @@ export default function App() {
         <Route path="expeditions" element={<Expeditions />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="repository/:id" element={<RepositoryDetail />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard/new" element={<ResourceForm />} />
+          <Route path="dashboard/:id/edit" element={<ResourceForm />} />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

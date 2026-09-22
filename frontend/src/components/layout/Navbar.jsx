@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { Button } from '../ui'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 // Public navigation only. Auth-aware items (dashboard, logout) arrive with Iteration 2.
 const NAV_LINKS = [
@@ -10,6 +11,7 @@ const NAV_LINKS = [
 ]
 
 export default function Navbar() {
+  const { isAuthenticated, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('cryoverse-theme')
@@ -61,8 +63,17 @@ export default function Navbar() {
             >
               <span aria-hidden="true">{theme === 'dark' ? '☼' : '☾'}</span>
             </button>
-            <Button to="/login" variant="ghost" size="sm" onClick={close}>Log in</Button>
-            <Button to="/register" size="sm" onClick={close}>Register</Button>
+            {isAuthenticated ? (
+              <>
+                <Button to="/dashboard" variant="ghost" size="sm" onClick={close}>Dashboard</Button>
+                <Button variant="ghost" size="sm" onClick={() => { close(); logout() }}>Log out</Button>
+              </>
+            ) : (
+              <>
+                <Button to="/login" variant="ghost" size="sm" onClick={close}>Log in</Button>
+                <Button to="/register" size="sm" onClick={close}>Register</Button>
+              </>
+            )}
           </div>
         </nav>
       </div>

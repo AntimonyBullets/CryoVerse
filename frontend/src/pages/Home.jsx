@@ -16,9 +16,29 @@ const ARCHIVE_LINKS = [
 ]
 
 export default function Home() {
+  const handleGlobeMove = (event) => {
+    const globe = event.currentTarget.querySelector('.hollow-globe')
+    if (!globe) return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2
+    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2
+    globe.style.setProperty('--globe-tilt-x', `${y * -9}deg`)
+    globe.style.setProperty('--globe-tilt-y', `${x * 12}deg`)
+  }
+
+  const resetGlobe = (event) => {
+    const globe = event.currentTarget.querySelector('.hollow-globe')
+    if (!globe) return
+    globe.style.setProperty('--globe-tilt-x', '0deg')
+    globe.style.setProperty('--globe-tilt-y', '0deg')
+  }
+
   return (
     <div className="field-page">
-      <div className="atmosphere" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div className="atmosphere" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
 
       <section className="earth-section">
         <div className="field-index">CRYOVERSE / FIELD JOURNAL <span>01—05</span></div>
@@ -28,8 +48,12 @@ export default function Home() {
           <p>A living record of the polar world: research, expedition memory and observations gathered at the edge of the map.</p>
           <Button to="/repository" size="lg">Explore Repository <span aria-hidden="true">↗</span></Button>
         </div>
-        <figure className="earth-object" aria-label="Minimal hollow polar globe">
+        <figure className="earth-object" aria-label="Photographic polar globe study" onMouseMove={handleGlobeMove} onMouseLeave={resetGlobe}>
           <div className="hollow-globe" aria-hidden="true">
+            <span className="globe-surface"></span>
+            <span className="globe-land globe-land--north"></span>
+            <span className="globe-land globe-land--south"></span>
+            <span className="globe-shine"></span>
             <span className="globe-contour globe-contour--vertical"></span>
             <span className="globe-contour globe-contour--horizontal"></span>
             <span className="globe-contour globe-contour--polar"></span>

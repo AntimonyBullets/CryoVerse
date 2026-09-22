@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Alert, Button, Card, Input, PasswordInput } from '../components/ui'
 import useForm from '../hooks/useForm.js'
 import { login } from '../services/authService.js'
 import { compactErrors, validateEmail, validateRequiredPassword } from '../utils/validation.js'
+import { useAuth } from '../context/AuthContext.jsx'
 
 function validate(values) {
   return compactErrors({
@@ -12,12 +13,16 @@ function validate(values) {
 }
 
 export default function Login() {
+  const { setUser } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { submitting, submitError, handleSubmit, getFieldProps } = useForm({
     initialValues: { email: '', password: '' },
     validate,
     onSubmit: async (values) => {
-      await login({ email: values.email.trim(), password: values.password })
-      // TODO(Iteration 2): store the session and redirect to the dashboard.
+      const user = await login({ email: values.email.trim(), password: values.password })
+      setUser(user)
+      navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
     },
   })
 

@@ -46,3 +46,32 @@ export function validateConfirmPassword(value, password) {
 export function compactErrors(errors) {
   return Object.fromEntries(Object.entries(errors).filter(([, message]) => message))
 }
+
+export function validateResourceTitle(value) {
+  const v = value.trim()
+  if (!v) return 'Enter a title.'
+  if (v.length > 160) return 'Title must be 160 characters or fewer.'
+  return ''
+}
+
+export function validateResourceDescription(value) {
+  const v = value.trim()
+  if (!v) return 'Enter a description.'
+  if (v.length > 2000) return 'Description must be 2000 characters or fewer.'
+  return ''
+}
+
+export function validateResourceType(value) {
+  return value ? '' : 'Select a resource type.'
+}
+
+export function validateOptionalUrl(value) {
+  const v = value.trim()
+  if (!v) return ''
+  try {
+    new URL(v)
+    return ''
+  } catch {
+    return 'Enter a full URL, e.g. https://example.com/report.pdf'
+  }
+}
