@@ -12,9 +12,13 @@ export default function Expeditions() {
       />
       <section className="section">
         <div className="container">
-          <EmptyState title="Expeditions will appear here">
-            This page will list expeditions once it is connected to the backend API.
-          </EmptyState>
+          <div className="archive-frame archive-frame--expeditions">
+            <div className="archive-frame__index">02 <span>EXPEDITION REGISTER</span></div>
+            <EmptyState title="The register is being prepared">
+              This page will list expeditions once it is connected to the backend API.
+            </EmptyState>
+            <div className="archive-frame__note">Routes / crews / observations / memory</div>
+          </div>
         </div>
       </section>
     </>

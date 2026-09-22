@@ -12,9 +12,13 @@ export default function Repository() {
       />
       <section className="section">
         <div className="container">
-          <EmptyState title="Resources will appear here">
-            This page will list resources once it is connected to the backend API.
-          </EmptyState>
+          <div className="archive-frame">
+            <div className="archive-frame__index">01 <span>RESOURCE INDEX</span></div>
+            <EmptyState title="The index is being prepared">
+              This page will list resources once it is connected to the backend API.
+            </EmptyState>
+            <div className="archive-frame__note">Reports / papers / datasets / media</div>
+          </div>
         </div>
       </section>
     </>
