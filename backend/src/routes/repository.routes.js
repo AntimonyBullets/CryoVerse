@@ -8,7 +8,7 @@ const {
     updateResource,
     deleteResource
 } = require("../controllers/repository.controller");
-const { authenticate, authorizeRoles } = require("../middleware/auth.middleware");
+const { authenticate, optionalAuthenticate, authorizeRoles } = require("../middleware/auth.middleware");
 const { uploadMedia, handleMediaUpload } = require("../controllers/media.controller");
 
 const router = express.Router();
@@ -16,7 +16,7 @@ const router = express.Router();
 router.get("/", listResources);
 router.get("/mine", authenticate, authorizeRoles("contributor"), listMyResources);
 router.post("/media", authenticate, authorizeRoles("contributor", "admin"), handleMediaUpload, uploadMedia);
-router.get("/:id", getResource);
+router.get("/:id", optionalAuthenticate, getResource);
 router.post("/", authenticate, authorizeRoles("contributor", "admin"), createResource);
 router.put("/:id", authenticate, authorizeRoles("contributor", "admin"), updateResource);
 router.delete("/:id", authenticate, authorizeRoles("contributor", "admin"), deleteResource);

@@ -29,6 +29,22 @@ const authenticate = (req, res, next) => {
     }
 };
 
+const optionalAuthenticate = (req, res, next) => {
+    const token = req.cookies && req.cookies[process.env.COOKIE_NAME || "token"];
+
+    if (!token || !process.env.JWT_SECRET) {
+        return next();
+    }
+
+    try {
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        // Preserve public access when no valid authentication is provided.
+    }
+
+    return next();
+};
+
 const authorizeRoles = (...roles) => (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
         return res.status(403).json({
@@ -42,5 +58,6 @@ const authorizeRoles = (...roles) => (req, res, next) => {
 
 module.exports = {
     authenticate,
+    optionalAuthenticate,
     authorizeRoles
 };

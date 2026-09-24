@@ -121,9 +121,21 @@ const getResource = async (req, res) => {
     }
 
     try {
+        const isAdmin = req.user && req.user.role === "admin";
+        const isContributorOwner = req.user
+            && req.user.role === "contributor"
+            && req.user.userId;
+        const visibilityFilter = isAdmin
+            ? {}
+            : {
+                $or: [
+                    { status: { $in: publicStatuses } },
+                    ...(isContributorOwner ? [{ contributorId: req.user.userId }] : [])
+                ]
+            };
         const resource = await Resource.findOne({
             _id: req.params.id,
-            status: { $in: publicStatuses }
+            ...visibilityFilter
         }).populate("expeditionId", "name year date location region description");
 
         if (!resource) {
