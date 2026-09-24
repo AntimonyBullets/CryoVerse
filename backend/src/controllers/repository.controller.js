@@ -26,6 +26,10 @@ const getWritableData = (body = {}) => writableFields.reduce((data, field) => {
     return data;
 }, {});
 
+const isRestrictedContributorStatus = (status, user) => (
+    user.role === "contributor" && ["approved", "published"].includes(status)
+);
+
 const isValidResourceId = (id) => mongoose.Types.ObjectId.isValid(id);
 const isResourceOwner = (resource, userId) => (
     resource.contributorId && resource.contributorId.toString() === userId
@@ -158,6 +162,13 @@ const createResource = async (req, res) => {
     try {
         const writableData = getWritableData(req.body);
 
+        if (isRestrictedContributorStatus(writableData.status, req.user)) {
+            return res.status(403).json({
+                success: false,
+                message: "Contributors cannot set resources to approved or published"
+            });
+        }
+
         if (writableData.expeditionId) {
             if (!isValidResourceId(writableData.expeditionId)) {
                 return res.status(400).json({
@@ -219,6 +230,13 @@ const updateResource = async (req, res) => {
         }
 
         const writableData = getWritableData(req.body);
+
+        if (isRestrictedContributorStatus(writableData.status, req.user)) {
+            return res.status(403).json({
+                success: false,
+                message: "Contributors cannot set resources to approved or published"
+            });
+        }
 
         if (writableData.expeditionId) {
             if (!isValidResourceId(writableData.expeditionId)) {
