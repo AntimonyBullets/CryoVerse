@@ -9,6 +9,13 @@ export async function createExpedition(payload) { return one(await api.post('/ex
 export async function updateExpedition(id, payload) { return one(await api.put(`/expeditions/${encodeURIComponent(id)}`, payload)) }
 export async function deleteExpedition(id) { return api.delete(`/expeditions/${encodeURIComponent(id)}`) }
 
+/**
+ * Triggers/fetches AI content for an expedition (POST /expeditions/:id/ai-content).
+ * options: { generateWebsiteArticle, generateLinkedInPost }
+ * Set `regenerate: true` to bypass the backend's cache and force a fresh generation.
+ * Returns { cached, aiContent } — aiContent fields: summary, simplifiedExplanation,
+ * suggestedMetadata, websiteArticleDraft, linkedInPostDraft, sourceResourceCount.
+ */
 export async function generateExpeditionAIContent(id, options = {}, { regenerate = false } = {}) {
   const suffix = regenerate ? '?regenerate=true' : ''
   const data = await api.post(`/expeditions/${encodeURIComponent(id)}/ai-content${suffix}`, {

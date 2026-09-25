@@ -43,6 +43,13 @@ export async function deleteResource(id) {
   return api.delete(`/repository/${encodeURIComponent(id)}`)
 }
 
+/**
+ * Triggers/fetches AI content for a resource (POST /repository/:id/ai-content).
+ * options: { generateWebsiteArticle, generateLinkedInPost }
+ * Set `regenerate: true` to bypass the backend's cache and force a fresh generation.
+ * Returns { cached, aiContent } — aiContent fields: summary, simplifiedExplanation,
+ * suggestedMetadata, transcript, websiteArticleDraft, linkedInPostDraft, sourceMediaType.
+ */
 export async function generateResourceAIContent(id, options = {}, { regenerate = false } = {}) {
   const suffix = regenerate ? '?regenerate=true' : ''
   const data = await api.post(`/repository/${encodeURIComponent(id)}/ai-content${suffix}`, {

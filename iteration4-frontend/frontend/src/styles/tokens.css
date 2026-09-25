@@ -1,0 +1,119 @@
+/* Cryoverse design tokens — single source of truth for the visual style */
+:root {
+  /* Brand: polar navy + glacier teal */
+  --color-navy-950: #061a2b;
+  --color-navy-900: #0a2540;
+  --color-navy-800: #0f3557;
+  --color-navy-700: #1a4b75;
+  --color-teal-600: #0e7c86;
+  --color-teal-500: #159aa6;
+  --color-teal-400: #3bb8c3;
+  --color-ice-100: #e8f4f8;
+  --color-ice-50: #f4f9fb;
+  --color-saffron-500: #62b9dc;
+
+  /* Neutrals */
+  --color-white: #f1feff;
+  --color-gray-50: #f7f9fa;
+  --color-gray-100: #eef2f5;
+  --color-gray-200: #dde4ea;
+  --color-gray-300: #c3ced8;
+  --color-gray-500: #6b7c8c;
+  --color-gray-700: #3a4a59;
+  --color-gray-900: #17222d;
+
+  /* Semantic */
+  --color-bg: #f4f1e9;
+  --color-surface: #fbfaf6;
+  --color-text: #252722;
+  --color-text-muted: #676b62;
+  --color-border: #d6d1c6;
+  --color-primary: #252722;
+  --color-primary-hover: #41372f;
+  --color-accent: #8fcfe2;
+  --color-accent-hover: #c9f1fa;
+  --color-success: #1f7a4d;
+  --color-success-bg: #e6f4ec;
+  --color-warning: #9a5b00;
+  --color-warning-bg: #fdf1dc;
+  --color-danger: #b42318;
+  --color-danger-bg: #fdeceb;
+  --color-info: #5c685c;
+  --color-info-bg: #e9ede5;
+  --color-focus: #aee3ef;
+  --ice-gradient: linear-gradient(105deg, #f0fbff 0%, #a9e6f7 48%, #4b9fc5 100%);
+  --ice-gradient-soft: linear-gradient(135deg, #dff7fc 0%, #8fd8f2 52%, #4b9fc5 100%);
+  --page-atmosphere: #f4f1e9;
+  --atmosphere-overlay: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(120, 124, 116, 0.08));
+
+  /* Typography: editorial serif display with a restrained humanist sans */
+  --font-sans: 'Trebuchet MS', 'Gill Sans', 'Segoe UI', sans-serif;
+  --font-serif: 'Baskerville', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: clamp(2rem, 4vw + 1rem, 3.25rem);
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+
+  /* Spacing (4px scale) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(10, 37, 64, 0.08);
+  --shadow-md: 0 4px 12px rgba(10, 37, 64, 0.1);
+  --shadow-lg: 0 12px 32px rgba(10, 37, 64, 0.16);
+
+  /* Layout */
+  --container-max: 1120px;
+  --navbar-height: 64px;
+  --transition: 180ms ease;
+}
+
+[data-theme="dark"] {
+  --color-bg: #020712;
+  --color-surface: #071426;
+  --color-text: #effaff;
+  --color-text-muted: #b7cdd8;
+  --color-border: #29465a;
+  --color-primary: #effaff;
+  --color-primary-hover: #ffffff;
+  --color-accent: #a9dce9;
+  --color-accent-hover: #e0f8fc;
+  --ice-gradient: linear-gradient(105deg, #f0fbff 0%, #a9e6f7 48%, #4b9fc5 100%);
+  --ice-gradient-soft: linear-gradient(135deg, #dff7fc 0%, #8fd8f2 52%, #4b9fc5 100%);
+  --color-info: #c4e4eb;
+  --color-info-bg: #1b3038;
+  --color-gray-100: #172c34;
+  --color-gray-200: #2b4853;
+  --color-gray-300: #668893;
+  --color-gray-500: #b5cdd3;
+  --color-gray-700: #e0f0f3;
+  --color-gray-900: #effaff;
+  --color-ice-50: #020712;
+  --color-ice-100: #0a1d31;
+  --color-white: #effaff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 18px 42px rgba(0, 0, 0, 0.32);
+  --page-atmosphere: #020712;
+  --atmosphere-overlay: linear-gradient(180deg, rgba(37, 101, 153, 0.08), rgba(0, 0, 0, 0.35));
+}
