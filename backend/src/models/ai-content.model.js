@@ -50,7 +50,7 @@ const aiContentSchema = new mongoose.Schema(
             type: String,
             default: null
         },
-        linkedInPostDraft: {
+        xPostDraft: {
             type: String,
             default: null
         },

@@ -70,7 +70,7 @@ const parseGeneratedContent = (content) => {
 const generateContent = async (
     sourceContent,
     resource,
-    { generateWebsiteArticle = false, generateLinkedInPost = false } = {}
+    { generateWebsiteArticle = false, generateXPost = false } = {}
 ) => {
     const groq = new Groq({
         apiKey: getRequiredSetting("GROQ_API_KEY")
@@ -85,8 +85,8 @@ const generateContent = async (
         requestedOutputs.push("websiteArticleDraft");
     }
 
-    if (generateLinkedInPost) {
-        requestedOutputs.push("linkedInPostDraft");
+    if (generateXPost) {
+        requestedOutputs.push("xPostDraft");
     }
 
     const response = await groq.chat.completions.create({
@@ -104,7 +104,11 @@ const generateContent = async (
                     "Preserve uncertainty and inconsistencies in the source rather than resolving them yourself.",
                     "Do not infer the total number of unique projects by adding seasonal counts.",
                     "If information is unavailable, omit it.",
+                    "Write in a natural, polished, professional editorial style. Avoid generic AI phrasing, repetition, exaggerated claims, and unnecessary headings.",
+                    "Make summary substantially longer than the other required outputs. Structure summary as several coherent paragraphs, followed by concise factual points, and finish with a clear conclusion. Do not use unsupported details to make it longer.",
+                    "The simplifiedExplanation should be clear and accessible; use short paragraphs and points only where they improve readability.",
                     "When websiteArticleDraft is requested, make it a detailed, substantially longer article while staying fully grounded in the source.",
+                    "When xPostDraft is requested, write a concise, professional X post draft with no emojis, hashtags, hype, or unsupported claims.",
                     `Return JSON with exactly these keys: ${requestedOutputs.join(", ")}.`,
                     "suggestedMetadata must be an object containing tags and any useful report metadata.",
                     "Do not include content for outputs that are not listed."
@@ -140,7 +144,7 @@ const generateContent = async (
 
     if (
         (generateWebsiteArticle && !generatedContent.websiteArticleDraft)
-        || (generateLinkedInPost && !generatedContent.linkedInPostDraft)
+        || (generateXPost && !generatedContent.xPostDraft)
     ) {
         const error = new Error("Groq did not return all requested AI content");
         error.statusCode = 502;
@@ -154,8 +158,8 @@ const generateContent = async (
         websiteArticleDraft: generateWebsiteArticle
             ? generatedContent.websiteArticleDraft
             : null,
-        linkedInPostDraft: generateLinkedInPost
-            ? generatedContent.linkedInPostDraft
+        xPostDraft: generateXPost
+            ? generatedContent.xPostDraft
             : null
     };
 };

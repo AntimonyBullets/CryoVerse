@@ -17,14 +17,14 @@ const generateExpeditionAIContent = async (req, res) => {
         });
     }
 
-    const { generateWebsiteArticle = false, generateLinkedInPost = false } = req.body || {};
+    const { generateWebsiteArticle = false, generateXPost = false } = req.body || {};
     if (
         typeof generateWebsiteArticle !== "boolean"
-        || typeof generateLinkedInPost !== "boolean"
+        || typeof generateXPost !== "boolean"
     ) {
         return res.status(400).json({
             success: false,
-            message: "generateWebsiteArticle and generateLinkedInPost must be boolean values"
+            message: "generateWebsiteArticle and generateXPost must be boolean values"
         });
     }
 
@@ -58,9 +58,9 @@ const generateExpeditionAIContent = async (req, res) => {
             existingContent
             && existingContent.sourceFingerprint === source.sourceFingerprint
             && (!generateWebsiteArticle || existingContent.websiteArticleDraft)
-            && (!generateLinkedInPost || existingContent.linkedInPostDraft)
+            && (!generateXPost || existingContent.xPostDraft)
             && (generateWebsiteArticle || !existingContent.websiteArticleDraft)
-            && (generateLinkedInPost || !existingContent.linkedInPostDraft)
+            && (generateXPost || !existingContent.xPostDraft)
             && req.query.regenerate !== "true"
         ) {
             return res.status(200).json({
@@ -73,7 +73,7 @@ const generateExpeditionAIContent = async (req, res) => {
         const generatedContent = await generateExpeditionContent(
             expedition,
             linkedResources,
-            { generateWebsiteArticle, generateLinkedInPost },
+            { generateWebsiteArticle, generateXPost },
             source
         );
         const aiContent = await ExpeditionAIContent.findOneAndUpdate(
