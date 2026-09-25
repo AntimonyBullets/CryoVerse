@@ -56,6 +56,28 @@ const resourceSchema = new mongoose.Schema(
             type: String,
             enum: ["draft", "submitted", "approved", "rejected", "published"],
             default: "draft"
+        },
+        reviewReason: {
+            type: String,
+            trim: true,
+            default: null
+        },
+        reviewedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
+        },
+        reviewedAt: {
+            type: Date,
+            default: null
+        },
+        submittedAt: {
+            type: Date,
+            default: null
+        },
+        publishedAt: {
+            type: Date,
+            default: null
         }
     },
     {

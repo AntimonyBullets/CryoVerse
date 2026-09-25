@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 const Resource = require("../models/resource.model");
 const Expedition = require("../models/expedition.model");
+const Audit = require("../models/audit.model");
+const { recordAudit } = require("../services/audit.service");
 
 const publicStatuses = ["approved", "published"];
 const writableFields = [
@@ -14,8 +16,7 @@ const writableFields = [
     "sourceUrl",
     "fileUrl",
     "expeditionId",
-    "date",
-    "status"
+    "date"
 ];
 
 const getWritableData = (body = {}) => writableFields.reduce((data, field) => {
@@ -25,10 +26,6 @@ const getWritableData = (body = {}) => writableFields.reduce((data, field) => {
 
     return data;
 }, {});
-
-const isRestrictedContributorStatus = (status, user) => (
-    user.role === "contributor" && ["approved", "published"].includes(status)
-);
 
 const isValidResourceId = (id) => mongoose.Types.ObjectId.isValid(id);
 const isResourceOwner = (resource, userId) => (
@@ -161,12 +158,8 @@ const getResource = async (req, res) => {
 const createResource = async (req, res) => {
     try {
         const writableData = getWritableData(req.body);
-
-        if (isRestrictedContributorStatus(writableData.status, req.user)) {
-            return res.status(403).json({
-                success: false,
-                message: "Contributors cannot set resources to approved or published"
-            });
+        if (req.user.role !== "admin") {
+            delete writableData.status;
         }
 
         if (writableData.expeditionId) {
@@ -184,6 +177,10 @@ const createResource = async (req, res) => {
                     message: "Expedition not found"
                 });
             }
+        }
+
+        if (req.user.role !== "admin") {
+            writableData.status = "draft";
         }
 
         const resource = await Resource.create({
@@ -228,14 +225,16 @@ const updateResource = async (req, res) => {
                 message: "You can only update your own resources"
             });
         }
-
-        const writableData = getWritableData(req.body);
-
-        if (isRestrictedContributorStatus(writableData.status, req.user)) {
+        if (!isAdmin && ["approved", "published"].includes(resource.status)) {
             return res.status(403).json({
                 success: false,
-                message: "Contributors cannot set resources to approved or published"
+                message: "Approved or published resources cannot be edited"
             });
+        }
+
+        const writableData = getWritableData(req.body);
+        if (req.user.role !== "admin") {
+            delete writableData.status;
         }
 
         if (writableData.expeditionId) {
@@ -256,6 +255,10 @@ const updateResource = async (req, res) => {
         }
 
         Object.assign(resource, writableData);
+        if (req.user.role !== "admin" && resource.status === "submitted") {
+            resource.status = "draft";
+            resource.submittedAt = null;
+        }
         await resource.save();
 
         return res.status(200).json({
@@ -265,6 +268,43 @@ const updateResource = async (req, res) => {
         });
     } catch (error) {
         return handleError(res, error, "update resource");
+    }
+};
+
+const submitResource = async (req, res) => {
+    if (!isValidResourceId(req.params.id)) {
+        return res.status(400).json({ success: false, message: "Invalid resource ID" });
+    }
+
+    try {
+        const resource = await Resource.findById(req.params.id);
+        if (!resource) {
+            return res.status(404).json({ success: false, message: "Resource not found" });
+        }
+        if (!isResourceOwner(resource, req.user.userId)) {
+            return res.status(403).json({ success: false, message: "You can only submit your own resources" });
+        }
+        if (!["draft", "rejected"].includes(resource.status)) {
+            return res.status(400).json({ success: false, message: "Only draft or rejected resources can be submitted" });
+        }
+
+        const fromStatus = resource.status;
+        resource.status = "submitted";
+        resource.submittedAt = new Date();
+        resource.reviewReason = null;
+        await resource.save();
+        await recordAudit({
+            actorId: req.user.userId,
+            targetType: "Resource",
+            targetId: resource._id,
+            action: "resource_submitted",
+            fromStatus,
+            toStatus: "submitted"
+        });
+
+        return res.status(200).json({ success: true, message: "Resource submitted for review", resource });
+    } catch (error) {
+        return handleError(res, error, "submit resource");
     }
 };
 
@@ -307,11 +347,36 @@ const deleteResource = async (req, res) => {
     }
 };
 
+const getResourceAudit = async (req, res) => {
+    if (!isValidResourceId(req.params.id)) {
+        return res.status(400).json({ success: false, message: "Invalid resource ID" });
+    }
+    try {
+        const resource = await Resource.findById(req.params.id).select("contributorId");
+        if (!resource) {
+            return res.status(404).json({ success: false, message: "Resource not found" });
+        }
+        const isOwner = isResourceOwner(resource, req.user.userId);
+        if (req.user.role !== "admin" && !isOwner) {
+            return res.status(403).json({ success: false, message: "You do not have permission to view this history" });
+        }
+        const history = await Audit.find({
+            targetType: "Resource",
+            targetId: resource._id
+        }).select("action fromStatus toStatus feedback createdAt").sort({ createdAt: -1 });
+        return res.status(200).json({ success: true, history });
+    } catch (error) {
+        return handleError(res, error, "get resource history");
+    }
+};
+
 module.exports = {
     listResources,
     listMyResources,
     getResource,
     createResource,
     updateResource,
-    deleteResource
+    deleteResource,
+    submitResource,
+    getResourceAudit
 };
