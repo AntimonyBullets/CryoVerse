@@ -9,6 +9,7 @@ import NotFound from './pages/NotFound.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import RepositoryDetail from './pages/RepositoryDetail.jsx'
 import ResourceForm from './pages/ResourceForm.jsx'
+import ExpeditionDetail from './pages/ExpeditionDetail.jsx'
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="repository" element={<Repository />} />
         <Route path="expeditions" element={<Expeditions />} />
+        <Route path="expeditions/:id" element={<ExpeditionDetail />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="repository/:id" element={<RepositoryDetail />} />

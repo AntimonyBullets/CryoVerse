@@ -60,5 +60,5 @@ export default function useForm({ initialValues, validate, onSubmit }) {
     }
   }
 
-  return { values, submitting, submitError, handleSubmit, getFieldProps }
+  return { values, setValues, submitting, submitError, handleSubmit, getFieldProps }
 }

@@ -8,8 +8,19 @@ function resourceFrom(data) {
   return data?.resource || null
 }
 
-export async function listResources() {
-  return resourcesFrom(await api.get('/repository'))
+export async function listResources(filters = {}) {
+  const query = new URLSearchParams()
+  Object.entries(filters).forEach(([key, value]) => value && query.set(key, value))
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+  return resourcesFrom(await api.get(`/repository${suffix}`))
+}
+
+export async function uploadMedia(file) {
+  const body = new FormData()
+  body.append('file', file)
+  const data = await api.post('/repository/media', body)
+  if (!data?.fileUrl) throw new Error('The media upload did not return a file URL.')
+  return data.fileUrl
 }
 
 export async function listMyResources() {
