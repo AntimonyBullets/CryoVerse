@@ -9,6 +9,17 @@ const {
     getExpeditionSource
 } = require("../services/ai-content.service");
 
+const serializeAIContent = (content, isAdmin) => {
+    const serialized = content.toObject ? content.toObject() : { ...content };
+    if (!isAdmin) {
+        delete serialized.websiteArticleDraft;
+        delete serialized.websiteArticleStatus;
+        delete serialized.websiteArticlePublishedAt;
+        delete serialized.xPostDraft;
+    }
+    return serialized;
+};
+
 const generateExpeditionAIContent = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
         return res.status(400).json({
@@ -29,6 +40,12 @@ const generateExpeditionAIContent = async (req, res) => {
     }
 
     try {
+        if ((generateWebsiteArticle || generateXPost) && req.user.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Only admins can generate website articles or X posts"
+            });
+        }
         const expedition = await Expedition.findById(req.params.id);
         if (!expedition) {
             return res.status(404).json({
@@ -66,7 +83,7 @@ const generateExpeditionAIContent = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 cached: true,
-                aiContent: existingContent
+                aiContent: serializeAIContent(existingContent, req.user.role === "admin")
             });
         }
 
@@ -76,11 +93,18 @@ const generateExpeditionAIContent = async (req, res) => {
             { generateWebsiteArticle, generateXPost },
             source
         );
+        const updateContent = { ...generatedContent };
+        if (!generateWebsiteArticle) {
+            delete updateContent.websiteArticleDraft;
+        }
+        if (!generateXPost) {
+            delete updateContent.xPostDraft;
+        }
         const aiContent = await ExpeditionAIContent.findOneAndUpdate(
             { expeditionId: expedition._id },
             {
                 expeditionId: expedition._id,
-                ...generatedContent
+                ...updateContent
             },
             { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
         );
@@ -88,7 +112,7 @@ const generateExpeditionAIContent = async (req, res) => {
         return res.status(200).json({
             success: true,
             cached: false,
-            aiContent
+            aiContent: serializeAIContent(aiContent, req.user.role === "admin")
         });
     } catch (error) {
         console.error("Expedition AI content generation failed:", error.message);

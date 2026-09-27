@@ -41,7 +41,7 @@ const getOAuthHeader = (method, url) => {
         .join(", ")}`;
 };
 
-const publishText = async (text) => {
+const publishText = async (text, mediaIds = []) => {
     if (typeof text !== "string" || !text.trim()) {
         const error = new Error("X post content is empty");
         error.statusCode = 400;
@@ -59,13 +59,16 @@ const publishText = async (text) => {
     }
 
     const url = "https://api.x.com/2/tweets";
-    const body = { text: text.trim() };
+    const body = {
+        text: text.trim(),
+        ...(mediaIds.length ? { media: { media_ids: mediaIds } } : {})
+    };
     let response;
     try {
         response = await fetch(url, {
             method: "POST",
             headers: {
-                Authorization: getOAuthHeader("POST", url, body),
+                Authorization: getOAuthHeader("POST", url),
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(body)
@@ -94,4 +97,57 @@ const publishText = async (text) => {
     return payload.data;
 };
 
-module.exports = { publishText };
+const uploadImage = async (imageUrl) => {
+    let imageResponse;
+    try {
+        imageResponse = await fetch(imageUrl);
+    } catch (error) {
+        const requestError = new Error(`Unable to download X image: ${error.message}`);
+        requestError.statusCode = 422;
+        throw requestError;
+    }
+    if (!imageResponse.ok) {
+        const error = new Error(`Unable to download X image (HTTP ${imageResponse.status})`);
+        error.statusCode = 422;
+        throw error;
+    }
+
+    const form = new FormData();
+    form.append("media", new Blob([await imageResponse.arrayBuffer()], {
+        type: imageResponse.headers.get("content-type") || "image/jpeg"
+    }), "cryoverse-image");
+    const url = "https://upload.twitter.com/1.1/media/upload.json";
+    let response;
+    try {
+        response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Authorization: getOAuthHeader("POST", url)
+            },
+            body: form
+        });
+    } catch (error) {
+        const requestError = new Error(`X media upload failed: ${error.message}`);
+        requestError.statusCode = 503;
+        throw requestError;
+    }
+
+    let payload;
+    try {
+        payload = await response.json();
+    } catch (error) {
+        payload = null;
+    }
+    if (!response.ok || !payload || !payload.media_id_string) {
+        const error = new Error(
+            payload && (payload.errors || payload.detail)
+                ? JSON.stringify(payload.errors || payload.detail)
+                : "X media upload failed"
+        );
+        error.statusCode = response.status === 429 ? 429 : 502;
+        throw error;
+    }
+    return payload.media_id_string;
+};
+
+module.exports = { publishText, uploadImage };

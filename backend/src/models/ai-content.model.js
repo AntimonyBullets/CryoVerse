@@ -50,6 +50,15 @@ const aiContentSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        websiteArticleStatus: {
+            type: String,
+            enum: ["draft", "published"],
+            default: "draft"
+        },
+        websiteArticlePublishedAt: {
+            type: Date,
+            default: null
+        },
         xPostDraft: {
             type: String,
             default: null

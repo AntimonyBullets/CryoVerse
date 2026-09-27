@@ -7,6 +7,7 @@ const repositoryRoutes = require("./routes/repository.routes");
 const expeditionRoutes = require("./routes/expedition.routes");
 const adminRoutes = require("./routes/admin.routes");
 const xRoutes = require("./routes/x.routes");
+const articleRoutes = require("./routes/article.routes");
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use("/api/repository", repositoryRoutes);
 app.use("/api/expeditions", expeditionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/x", xRoutes);
+app.use("/api/articles", articleRoutes);
 
 module.exports = app;

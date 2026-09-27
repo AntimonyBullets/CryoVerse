@@ -231,6 +231,12 @@ const updateResource = async (req, res) => {
                 message: "Approved or published resources cannot be edited"
             });
         }
+        if (!isAdmin && resource.status === "submitted") {
+            return res.status(400).json({
+                success: false,
+                message: "Submitted resources cannot be edited until reviewed"
+            });
+        }
 
         const writableData = getWritableData(req.body);
         if (req.user.role !== "admin") {
@@ -255,10 +261,6 @@ const updateResource = async (req, res) => {
         }
 
         Object.assign(resource, writableData);
-        if (req.user.role !== "admin" && resource.status === "submitted") {
-            resource.status = "draft";
-            resource.submittedAt = null;
-        }
         await resource.save();
 
         return res.status(200).json({

@@ -16,6 +16,11 @@ const xPublicationSchema = new mongoose.Schema(
             required: true,
             maxlength: 280
         },
+        media: [{
+            url: { type: String, required: true },
+            publicId: { type: String, default: null },
+            resourceType: { type: String, enum: ["image"], default: "image" }
+        }],
         status: {
             type: String,
             enum: ["draft", "published", "failed"],

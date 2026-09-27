@@ -9,6 +9,17 @@ const {
 
 const textualResourceTypes = ["report", "publication"];
 
+const serializeAIContent = (content, isAdmin) => {
+    const serialized = content.toObject ? content.toObject() : { ...content };
+    if (!isAdmin) {
+        delete serialized.websiteArticleDraft;
+        delete serialized.websiteArticleStatus;
+        delete serialized.websiteArticlePublishedAt;
+        delete serialized.xPostDraft;
+    }
+    return serialized;
+};
+
 const isValidPdfUrl = (fileUrl) => {
     try {
         const url = new URL(fileUrl);
@@ -67,12 +78,16 @@ const generateResourceAIContent = async (req, res) => {
         }
 
         const isAdmin = req.user.role === "admin";
-        const isOwner = resource.contributorId
-            && resource.contributorId.toString() === req.user.userId;
-        if (!isAdmin && !isOwner) {
+        if ((generateWebsiteArticle || generateXPost) && !isAdmin) {
             return res.status(403).json({
                 success: false,
-                message: "You can only generate content for your own resources"
+                message: "Only admins can generate website articles or X posts"
+            });
+        }
+        if (!isAdmin && req.user.role !== "contributor") {
+            return res.status(403).json({
+                success: false,
+                message: "Contributor or admin access is required to generate AI content"
             });
         }
 
@@ -102,19 +117,26 @@ const generateResourceAIContent = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 cached: true,
-                aiContent: existingContent
+                aiContent: serializeAIContent(existingContent, isAdmin)
             });
         }
 
         const generatedContent = isVideo
             ? await generateVideoContent(resource, generationOptions)
             : await generateDocumentContent(resource, generationOptions);
+        const updateContent = { ...generatedContent };
+        if (!generateWebsiteArticle) {
+            delete updateContent.websiteArticleDraft;
+        }
+        if (!generateXPost) {
+            delete updateContent.xPostDraft;
+        }
         const aiContent = await AIContent.findOneAndUpdate(
             { resourceId: resource._id },
             {
                 resourceId: resource._id,
                 sourceFileUrl: resource.fileUrl,
-                ...generatedContent
+                ...updateContent
             },
             { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
         );
@@ -122,7 +144,7 @@ const generateResourceAIContent = async (req, res) => {
         return res.status(200).json({
             success: true,
             cached: false,
-            aiContent
+            aiContent: serializeAIContent(aiContent, isAdmin)
         });
     } catch (error) {
         console.error("AI content generation failed:", error.message);

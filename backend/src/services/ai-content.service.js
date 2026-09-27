@@ -67,6 +67,20 @@ const parseGeneratedContent = (content) => {
     }
 };
 
+const normalizeXPost = (content) => {
+    const normalized = String(content || "").replace(/\s+/g, " ").trim();
+    if (!normalized) {
+        const error = new Error("Groq returned an empty X post draft");
+        error.statusCode = 502;
+        throw error;
+    }
+    if (normalized.length <= 280) {
+        return normalized;
+    }
+
+    return `${normalized.slice(0, 277).trimEnd()}...`;
+};
+
 const generateContent = async (
     sourceContent,
     resource,
@@ -108,7 +122,7 @@ const generateContent = async (
                     "Make summary substantially longer than the other required outputs. Structure summary as several coherent paragraphs, followed by concise factual points, and finish with a clear conclusion. Do not use unsupported details to make it longer.",
                     "The simplifiedExplanation should be clear and accessible; use short paragraphs and points only where they improve readability.",
                     "When websiteArticleDraft is requested, make it a detailed, substantially longer article while staying fully grounded in the source.",
-                    "When xPostDraft is requested, write a concise, professional X post draft with no emojis, hashtags, hype, or unsupported claims.",
+                    "When xPostDraft is requested, write a concise, professional X post draft of no more than 280 characters including spaces and hashtags, with no emojis, hype, or unsupported claims.",
                     `Return JSON with exactly these keys: ${requestedOutputs.join(", ")}.`,
                     "suggestedMetadata must be an object containing tags and any useful report metadata.",
                     "Do not include content for outputs that are not listed."
@@ -159,7 +173,7 @@ const generateContent = async (
             ? generatedContent.websiteArticleDraft
             : null,
         xPostDraft: generateXPost
-            ? generatedContent.xPostDraft
+            ? normalizeXPost(generatedContent.xPostDraft)
             : null
     };
 };
