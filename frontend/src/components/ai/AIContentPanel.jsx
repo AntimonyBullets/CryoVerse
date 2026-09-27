@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Alert, Button, Card, Spinner } from '../ui'
 
 export default function AIContentPanel({ title, description, generate }) {
@@ -41,7 +41,7 @@ export default function AIContentPanel({ title, description, generate }) {
   return <Card title={title} className="ai-panel">
     {description && <p className="text-muted">{description}</p>}
     <label className="ai-panel__checkbox"><input type="checkbox" checked={options.generateWebsiteArticle} onChange={(e) => setOptions((current) => ({ ...current, generateWebsiteArticle: e.target.checked }))} />Generate website article</label>
-    <label className="ai-panel__checkbox"><input type="checkbox" checked={options.generateLinkedInPost} onChange={(e) => setOptions((current) => ({ ...current, generateLinkedInPost: e.target.checked }))} />Generate LinkedIn post</label>
+    <label className="ai-panel__checkbox"><input type="checkbox" checked={options.generateLinkedInPost} onChange={(e) => setOptions((current) => ({ ...current, generateLinkedInPost: e.target.checked }))} />Generate X post</label>
     <div className="ai-panel__actions">
       <Button type="button" loading={status === 'loading'} onClick={() => run(false)}>{status === 'loading' ? 'Generating…' : 'Generate AI content'}</Button>
       {status === 'success' && <Button type="button" variant="secondary" size="sm" onClick={() => run(true)}>Regenerate</Button>}
@@ -57,13 +57,25 @@ export default function AIContentPanel({ title, description, generate }) {
       {content.suggestedMetadata && <div className="field"><span className="field__label">Suggested metadata</span><SuggestedMetadata data={content.suggestedMetadata} /></div>}
       {content.transcript && <EditableField id="ai-transcript" label="Transcript" value={content.transcript} rows={6} readOnly />}
       {hasWebsiteArticle && <EditableField id="ai-article" label="Website article draft" value={edited.websiteArticleDraft} onChange={(value) => updateField('websiteArticleDraft', value)} rows={8} />}
-      {hasLinkedInPost && <EditableField id="ai-linkedin" label="LinkedIn post draft" value={edited.linkedInPostDraft} onChange={(value) => updateField('linkedInPostDraft', value)} rows={5} />}
+      {hasLinkedInPost && <EditableField id="ai-linkedin" label="X post draft" value={edited.linkedInPostDraft} onChange={(value) => updateField('linkedInPostDraft', value)} rows={5} />}
     </div>}
   </Card>
 }
 
 function EditableField({ id, label, value, onChange, rows, readOnly = false }) {
-  return <div className="field"><label className="field__label" htmlFor={id}>{label}</label><textarea id={id} className="field__input field__textarea" rows={rows} value={value} onChange={onChange ? (event) => onChange(event.target.value) : undefined} readOnly={readOnly} /></div>
+  const textareaRef = useRef(null)
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    textarea.style.height = 'auto'
+    const styles = window.getComputedStyle(textarea)
+    const borderHeight = parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth)
+    textarea.style.height = `${textarea.scrollHeight + borderHeight}px`
+  }, [value, rows])
+
+  return <div className="field"><label className="field__label" htmlFor={id}>{label}</label><textarea ref={textareaRef} id={id} className="field__input field__textarea" rows={rows} value={value} onChange={onChange ? (event) => onChange(event.target.value) : undefined} readOnly={readOnly} /></div>
 }
 
 function SuggestedMetadata({ data }) {

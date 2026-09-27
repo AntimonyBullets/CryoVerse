@@ -47,8 +47,8 @@ h3 { font-size: var(--text-xl); }
 h4 { font-size: var(--text-lg); }
 p { margin: 0 0 var(--space-4); }
 
-a { color: var(--color-accent); text-decoration: none; }
-a:hover { color: var(--color-accent-hover); text-decoration: underline; }
+a { color: var(--color-link); text-decoration: none; }
+a:hover { color: var(--color-link-hover); text-decoration: underline; }
 
 img, svg { max-width: 100%; display: block; }
 
@@ -77,7 +77,7 @@ img, svg { max-width: 100%; display: block; }
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-link);
 }
 .section + .section { border-top: 1px solid var(--color-border); }
 .visually-hidden {

@@ -37,7 +37,7 @@ export default function Dashboard() {
       {!error && resources?.length > 0 && <div className="stack">{resources.map((resource) => {
         const id = resource._id || resource.id
         const meta = statusMeta(resource.status)
-        return <Card key={id}><div className="dashboard-item"><div><h3><Link to={`/repository/${id}`}>{resource.title}</Link></h3><div className="resource-card__meta"><Badge variant="neutral">{resource.type}</Badge><Badge variant={meta.variant}>{meta.label}</Badge></div></div><div className="dashboard-item__actions"><Button to={`/dashboard/${id}/edit`} variant="secondary" size="sm">Edit</Button><Button variant="danger" size="sm" loading={deletingId === id} onClick={() => handleDelete(id)}>Delete</Button></div></div></Card>
+        return <Card key={id}><div className="dashboard-item"><div className="dashboard-item__content"><h3><Link to={`/repository/${id}`}>{resource.title}</Link></h3><div className="resource-card__meta"><Badge variant="neutral">{resource.type}</Badge><Badge variant={meta.variant}>{meta.label}</Badge></div></div><div className="dashboard-item__actions"><Button to={`/dashboard/${id}/edit`} variant="secondary" size="sm">Edit</Button><Button variant="danger" size="sm" loading={deletingId === id} onClick={() => handleDelete(id)}>Delete</Button></div></div></Card>
       })}</div>}
     </div></section>
   </>
