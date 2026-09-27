@@ -21,6 +21,13 @@ const serializeAIContent = (content, isAdmin) => {
 };
 
 const generateExpeditionAIContent = async (req, res) => {
+    if (!req.user || !["contributor", "admin"].includes(req.user.role)) {
+        return res.status(403).json({
+            success: false,
+            message: "Contributor or admin access is required to generate expedition AI content"
+        });
+    }
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
         return res.status(400).json({
             success: false,
