@@ -239,7 +239,7 @@ const getAuditHistory = async (req, res) => {
     try {
         const { page, limit } = parsePagination(req.query);
         const filter = {};
-        if (req.query.targetType && ["User", "Resource", "Expedition", "XPost"].includes(req.query.targetType)) {
+        if (req.query.targetType && ["User", "Resource", "Expedition", "BlueskyPost"].includes(req.query.targetType)) {
             filter.targetType = req.query.targetType;
         }
         if (req.query.targetId) {

@@ -3,14 +3,14 @@ import { Alert, Badge, Card, Spinner } from '../../components/ui'
 import AdminPagination from '../../components/admin/AdminPagination.jsx'
 import { getAuditHistory } from '../../services/adminService.js'
 
-const TARGET_TYPES = ['User', 'Resource', 'Expedition', 'XPost']
+const TARGET_TYPES = ['User', 'Resource', 'Expedition', 'BlueskyPost']
 const ACTION_VARIANT = {
   resource_approved: 'success',
   resource_published: 'success',
   website_article_published: 'success',
-  x_post_published: 'success',
+  bluesky_post_published: 'success',
   resource_rejected: 'danger',
-  x_post_failed: 'danger',
+  bluesky_post_failed: 'danger',
   resource_unpublished: 'warning',
   website_article_unpublished: 'warning',
   role_changed: 'info',

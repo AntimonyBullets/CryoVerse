@@ -4,7 +4,7 @@ import PageHeader from '../components/layout/PageHeader.jsx'
 import { Alert, Badge, Button, Card, Spinner } from '../components/ui'
 import AIContentPanel from '../components/ai/AIContentPanel.jsx'
 import ArticlePanel from '../components/article/ArticlePanel.jsx'
-import XPanel from '../components/x/XPanel.jsx'
+import BlueskyPanel from '../components/bluesky/BlueskyPanel.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { generateResourceAIContent, getResource } from '../services/repositoryService.js'
 import { moderateResource, publishResource, unpublishResource } from '../services/adminService.js'
@@ -36,6 +36,7 @@ export default function RepositoryDetail() {
   const error = result.id === id ? result.error : null
   if (error) return <section className="section"><div className="container"><Alert variant="danger" title="Couldn't load this resource">{error.message}</Alert><p><Link to="/repository">Back to repository</Link></p></div></section>
   if (!resource) return <section className="section"><div className="container page-loading"><Spinner label="Loading resource" /></div></section>
+  if (user?.role === 'user' && resource.status !== 'published') return <section className="section"><div className="container"><Alert variant="danger" title="Resource not found">This resource is not available.</Alert><p><Link to="/repository">Back to repository</Link></p></div></section>
   const meta = statusMeta(resource.status)
   const fileUrl = resource.fileUrl
   const isPdf = /\.pdf($|\?)/i.test(fileUrl || '') || /\/raw\/upload\//i.test(fileUrl || '')
@@ -104,7 +105,7 @@ export default function RepositoryDetail() {
             </div>}
           </Card>
 
-          {isAdmin && <Card title="Admin moderation">
+          {isAdmin && <Card title="Admin moderation" className="admin-moderation-card">
             {moderationError && <Alert variant="danger">{moderationError}</Alert>}
             <div className="ai-panel__actions">
               {resource.status === 'submitted' && <>
@@ -133,7 +134,7 @@ export default function RepositoryDetail() {
           />}
 
           {isAdmin && <ArticlePanel targetType="resource" targetId={id} refreshToken={refreshToken} />}
-          {isAdmin && <XPanel targetType="resource" targetId={id} refreshToken={refreshToken} />}
+          {isAdmin && <BlueskyPanel targetType="resource" targetId={id} refreshToken={refreshToken} />}
 
           <p><Button to="/repository" variant="ghost">Back to repository</Button></p>
         </div>

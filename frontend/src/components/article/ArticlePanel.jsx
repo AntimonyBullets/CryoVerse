@@ -95,8 +95,8 @@ export default function ArticlePanel({ targetType, targetId, refreshToken }) {
       <textarea id="article-draft" className="field__input field__textarea" rows={12}
         value={draft} onChange={(e) => setDraft(e.target.value)} readOnly={isPublished} />
     </div>
-    {actionError && <Alert variant="danger">{actionError}</Alert>}
-    {actionMessage && <Alert variant="success">{actionMessage}</Alert>}
+    {actionError && <Alert className="article-panel__action-message" variant="danger">{actionError}</Alert>}
+    {actionMessage && <Alert className="article-panel__action-message" variant="success">{actionMessage}</Alert>}
     <div className="ai-panel__actions">
       {!isPublished && <Button size="sm" loading={saving} disabled={!dirty || !draft.trim()} onClick={handleSave}>Save draft</Button>}
       {!isPublished && <Button size="sm" variant="secondary" loading={publishing} disabled={dirty || !article.content} onClick={handlePublish}>Publish</Button>}

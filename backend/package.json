@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@atproto/api": "^0.21.0",
     "@google/genai": "^2.24.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",

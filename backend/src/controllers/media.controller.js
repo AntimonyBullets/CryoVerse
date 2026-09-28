@@ -20,10 +20,13 @@ const mediaUpload = multer({
     }
 });
 
+// Bluesky attachment uploads. These mirror the Bluesky post limits
+// (max 2 MB, JPEG/PNG/GIF/WebP) so an oversized or unsupported file is
+// rejected on upload rather than failing later at publish time.
 const imageUpload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 10 * 1024 * 1024
+        fileSize: 2000000
     },
     fileFilter: (req, file, callback) => {
         if (["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.mimetype)) {

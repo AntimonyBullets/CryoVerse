@@ -9,7 +9,7 @@ const auditSchema = new mongoose.Schema(
         },
         targetType: {
             type: String,
-            enum: ["User", "Resource", "Expedition", "XPost"],
+            enum: ["User", "Resource", "Expedition", "BlueskyPost"],
             required: true
         },
         targetId: {

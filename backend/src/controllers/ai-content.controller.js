@@ -15,7 +15,7 @@ const serializeAIContent = (content, isAdmin) => {
         delete serialized.websiteArticleDraft;
         delete serialized.websiteArticleStatus;
         delete serialized.websiteArticlePublishedAt;
-        delete serialized.xPostDraft;
+        delete serialized.blueskyPostDraft;
     }
     return serialized;
 };
@@ -52,20 +52,20 @@ const generateResourceAIContent = async (req, res) => {
         });
     }
 
-    const { generateWebsiteArticle = false, generateXPost = false } = req.body || {};
+    const { generateWebsiteArticle = false, generateBlueskyPost = false } = req.body || {};
     if (
         typeof generateWebsiteArticle !== "boolean"
-        || typeof generateXPost !== "boolean"
+        || typeof generateBlueskyPost !== "boolean"
     ) {
         return res.status(400).json({
             success: false,
-            message: "generateWebsiteArticle and generateXPost must be boolean values"
+            message: "generateWebsiteArticle and generateBlueskyPost must be boolean values"
         });
     }
 
     const generationOptions = {
         generateWebsiteArticle,
-        generateXPost
+        generateBlueskyPost
     };
 
     try {
@@ -78,10 +78,10 @@ const generateResourceAIContent = async (req, res) => {
         }
 
         const isAdmin = req.user.role === "admin";
-        if ((generateWebsiteArticle || generateXPost) && !isAdmin) {
+        if ((generateWebsiteArticle || generateBlueskyPost) && !isAdmin) {
             return res.status(403).json({
                 success: false,
-                message: "Only admins can generate website articles or X posts"
+                message: "Only admins can generate website articles or Bluesky posts"
             });
         }
         if (!isAdmin && req.user.role !== "contributor") {
@@ -109,9 +109,9 @@ const generateResourceAIContent = async (req, res) => {
             && existingContent.documentExtractionMethod === expectedExtractionMethod
             && existingContent.extractedDocumentContent
             && (!generateWebsiteArticle || existingContent.websiteArticleDraft)
-            && (!generateXPost || existingContent.xPostDraft)
+            && (!generateBlueskyPost || existingContent.blueskyPostDraft)
             && (generateWebsiteArticle || !existingContent.websiteArticleDraft)
-            && (generateXPost || !existingContent.xPostDraft)
+            && (generateBlueskyPost || !existingContent.blueskyPostDraft)
             && req.query.regenerate !== "true"
         ) {
             return res.status(200).json({
@@ -128,8 +128,8 @@ const generateResourceAIContent = async (req, res) => {
         if (!generateWebsiteArticle) {
             delete updateContent.websiteArticleDraft;
         }
-        if (!generateXPost) {
-            delete updateContent.xPostDraft;
+        if (!generateBlueskyPost) {
+            delete updateContent.blueskyPostDraft;
         }
         const aiContent = await AIContent.findOneAndUpdate(
             { resourceId: resource._id },

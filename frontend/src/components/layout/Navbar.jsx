@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/repository', label: 'Repository' },
   { to: '/expeditions', label: 'Expeditions' },
+  { to: '/articles', label: 'Articles' },
 ]
 
 export default function Navbar() {
@@ -65,8 +66,9 @@ export default function Navbar() {
             </button>
             {isAuthenticated ? (
               <>
-                <Button to="/dashboard" variant="ghost" size="sm" onClick={close}>Dashboard</Button>
-                {user?.role === 'admin' && <Button to="/admin" variant="ghost" size="sm" onClick={close}>Admin</Button>}
+                <Button to={user?.role === 'admin' ? '/admin' : '/dashboard'} variant="ghost" size="sm" onClick={close}>
+                  {user?.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => { close(); logout() }}>Log out</Button>
               </>
             ) : (

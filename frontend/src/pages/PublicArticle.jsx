@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
+import Markdown from '../components/article/Markdown.jsx'
 import { Alert, Spinner } from '../components/ui'
 import { getPublishedArticle } from '../services/articleService.js'
 
@@ -35,10 +36,10 @@ export default function PublicArticle() {
   const backTo = targetType === 'resource' ? `/repository/${id}` : `/expeditions/${id}`
 
   return <>
-    <PageHeader eyebrow="Article" title="Cryoverse feature" subtitle={article.publishedAt ? `Published ${new Date(article.publishedAt).toLocaleDateString()}` : undefined} />
+    <PageHeader eyebrow="Article" title="Cryoverse article" subtitle={article.publishedAt ? `Published ${new Date(article.publishedAt).toLocaleDateString()}` : undefined} />
     <section className="section"><div className="container">
       <article className="public-article">
-        {article.content.split(/\n{2,}/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+        <Markdown content={article.content} />
       </article>
       <p><Link to={backTo}>Back to {targetType}</Link></p>
     </div></section>

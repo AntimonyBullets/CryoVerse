@@ -29,6 +29,16 @@ function normalize(data, targetType, targetId) {
   }
 }
 
+/** Public: lists and searches all published articles. */
+export async function getPublishedArticles(params = {}) {
+  const query = new URLSearchParams()
+  if (params.search) query.append('search', params.search)
+  if (params.targetType) query.append('targetType', params.targetType)
+  const queryString = query.toString()
+  const data = await api.get(`/articles${queryString ? `?${queryString}` : ''}`)
+  return data.articles || []
+}
+
 /** Public: only returns an article when it has been published. */
 export async function getPublishedArticle(targetType, id) {
   const data = await api.get(`/articles/${encodeURIComponent(targetType)}/${encodeURIComponent(id)}`)

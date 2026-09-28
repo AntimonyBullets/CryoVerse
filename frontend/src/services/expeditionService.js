@@ -13,7 +13,7 @@ export async function generateExpeditionAIContent(id, options = {}, { regenerate
   const suffix = regenerate ? '?regenerate=true' : ''
   const data = await api.post(`/expeditions/${encodeURIComponent(id)}/ai-content${suffix}`, {
     generateWebsiteArticle: Boolean(options.generateWebsiteArticle),
-    generateXPost: Boolean(options.generateXPost),
+    generateBlueskyPost: Boolean(options.generateBlueskyPost),
   })
   return { cached: Boolean(data?.cached), aiContent: data?.aiContent || null }
 }

@@ -59,7 +59,7 @@ const aiContentSchema = new mongoose.Schema(
             type: Date,
             default: null
         },
-        xPostDraft: {
+        blueskyPostDraft: {
             type: String,
             default: null
         },

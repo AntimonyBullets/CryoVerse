@@ -11,6 +11,7 @@ import RepositoryDetail from './pages/RepositoryDetail.jsx'
 import ResourceForm from './pages/ResourceForm.jsx'
 import ExpeditionDetail from './pages/ExpeditionDetail.jsx'
 import PublicArticle from './pages/PublicArticle.jsx'
+import Articles from './pages/Articles.jsx'
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 import AdminLayout from './pages/admin/AdminLayout.jsx'
 import AdminUsers from './pages/admin/AdminUsers.jsx'
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="repository/:id" element={<RepositoryDetail />} />
+        <Route path="articles" element={<Articles />} />
         <Route path="articles/:targetType/:id" element={<PublicArticle />} />
         <Route element={<ProtectedRoute />}>
           <Route path="dashboard" element={<Dashboard />} />

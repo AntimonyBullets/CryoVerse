@@ -7,7 +7,7 @@ const {
     editDraft,
     publishDraft,
     getPublishingStatus
-} = require("../controllers/x.controller");
+} = require("../controllers/bluesky.controller");
 
 const router = express.Router();
 router.use(authenticate, authorizeRoles("admin"));

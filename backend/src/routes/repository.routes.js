@@ -17,7 +17,9 @@ const { generateResourceAIContent } = require("../controllers/ai-content.control
 const router = express.Router();
 
 router.get("/", listResources);
-router.get("/mine", authenticate, authorizeRoles("contributor"), listMyResources);
+// Ownership, not role, decides who may list their own resources: an account
+// that contributed resources must still see them after a role change.
+router.get("/mine", authenticate, listMyResources);
 router.post("/media", authenticate, authorizeRoles("contributor", "admin"), handleMediaUpload, uploadMedia);
 router.post("/:id/ai-content", authenticate, authorizeRoles("contributor", "admin"), generateResourceAIContent);
 router.post("/:id/submit", authenticate, authorizeRoles("contributor"), submitResource);

@@ -113,7 +113,7 @@ export default function AdminSubmissions() {
             <p className="text-muted admin-submission__ai">
               {aiContent ? 'AI content has been generated for this resource.' : 'No AI content generated yet.'}
               {aiContent?.websiteArticleDraft ? ' Website article draft available.' : ''}
-              {aiContent?.xPostDraft ? ' X post draft available.' : ''}
+              {aiContent?.blueskyPostDraft ? ' Bluesky post draft available.' : ''}
             </p>
           </div>
           <div className="admin-submission__actions">

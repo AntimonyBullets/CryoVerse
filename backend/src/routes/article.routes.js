@@ -2,6 +2,7 @@ const express = require("express");
 
 const { authenticate, authorizeRoles } = require("../middleware/auth.middleware");
 const {
+    listPublishedArticles,
     getArticle,
     getPublishedArticle,
     editArticle,
@@ -10,6 +11,7 @@ const {
 } = require("../controllers/article.controller");
 
 const router = express.Router();
+router.get("/", listPublishedArticles);
 router.get("/:targetType/:id", getPublishedArticle);
 router.get("/admin/:targetType/:id", authenticate, authorizeRoles("admin"), getArticle);
 router.put("/admin/:targetType/:id", authenticate, authorizeRoles("admin"), editArticle);

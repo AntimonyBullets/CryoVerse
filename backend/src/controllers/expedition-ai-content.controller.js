@@ -15,7 +15,7 @@ const serializeAIContent = (content, isAdmin) => {
         delete serialized.websiteArticleDraft;
         delete serialized.websiteArticleStatus;
         delete serialized.websiteArticlePublishedAt;
-        delete serialized.xPostDraft;
+        delete serialized.blueskyPostDraft;
     }
     return serialized;
 };
@@ -35,22 +35,22 @@ const generateExpeditionAIContent = async (req, res) => {
         });
     }
 
-    const { generateWebsiteArticle = false, generateXPost = false } = req.body || {};
+    const { generateWebsiteArticle = false, generateBlueskyPost = false } = req.body || {};
     if (
         typeof generateWebsiteArticle !== "boolean"
-        || typeof generateXPost !== "boolean"
+        || typeof generateBlueskyPost !== "boolean"
     ) {
         return res.status(400).json({
             success: false,
-            message: "generateWebsiteArticle and generateXPost must be boolean values"
+            message: "generateWebsiteArticle and generateBlueskyPost must be boolean values"
         });
     }
 
     try {
-        if ((generateWebsiteArticle || generateXPost) && req.user.role !== "admin") {
+        if ((generateWebsiteArticle || generateBlueskyPost) && req.user.role !== "admin") {
             return res.status(403).json({
                 success: false,
-                message: "Only admins can generate website articles or X posts"
+                message: "Only admins can generate website articles or Bluesky posts"
             });
         }
         const expedition = await Expedition.findById(req.params.id);
@@ -82,9 +82,9 @@ const generateExpeditionAIContent = async (req, res) => {
             existingContent
             && existingContent.sourceFingerprint === source.sourceFingerprint
             && (!generateWebsiteArticle || existingContent.websiteArticleDraft)
-            && (!generateXPost || existingContent.xPostDraft)
+            && (!generateBlueskyPost || existingContent.blueskyPostDraft)
             && (generateWebsiteArticle || !existingContent.websiteArticleDraft)
-            && (generateXPost || !existingContent.xPostDraft)
+            && (generateBlueskyPost || !existingContent.blueskyPostDraft)
             && req.query.regenerate !== "true"
         ) {
             return res.status(200).json({
@@ -97,15 +97,15 @@ const generateExpeditionAIContent = async (req, res) => {
         const generatedContent = await generateExpeditionContent(
             expedition,
             linkedResources,
-            { generateWebsiteArticle, generateXPost },
+            { generateWebsiteArticle, generateBlueskyPost },
             source
         );
         const updateContent = { ...generatedContent };
         if (!generateWebsiteArticle) {
             delete updateContent.websiteArticleDraft;
         }
-        if (!generateXPost) {
-            delete updateContent.xPostDraft;
+        if (!generateBlueskyPost) {
+            delete updateContent.blueskyPostDraft;
         }
         const aiContent = await ExpeditionAIContent.findOneAndUpdate(
             { expeditionId: expedition._id },

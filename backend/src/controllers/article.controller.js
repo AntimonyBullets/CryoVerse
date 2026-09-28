@@ -117,7 +117,85 @@ const unpublishArticle = async (req, res) => {
     return res.status(200).json({ success: true, article: target.content });
 };
 
+const listPublishedArticles = async (req, res) => {
+    try {
+        const { search, targetType } = req.query || {};
+        let articles = [];
+
+        if (!targetType || targetType === "all" || targetType === "resource") {
+            const resourceArticles = await AIContent.find({ websiteArticleStatus: "published" })
+                .populate("resourceId");
+            for (const item of resourceArticles) {
+                if (item.resourceId) {
+                    articles.push({
+                        targetType: "resource",
+                        targetId: item.resourceId._id,
+                        title: item.resourceId.title,
+                        description: item.resourceId.description,
+                        summary: item.summary,
+                        content: item.websiteArticleDraft,
+                        publishedAt: item.websiteArticlePublishedAt || item.updatedAt,
+                        category: item.resourceId.category,
+                        tags: item.resourceId.tags || [],
+                        source: item.resourceId.source
+                    });
+                }
+            }
+        }
+
+        if (!targetType || targetType === "all" || targetType === "expedition") {
+            const expeditionArticles = await ExpeditionAIContent.find({ websiteArticleStatus: "published" })
+                .populate("expeditionId");
+            for (const item of expeditionArticles) {
+                if (item.expeditionId) {
+                    articles.push({
+                        targetType: "expedition",
+                        targetId: item.expeditionId._id,
+                        title: item.expeditionId.name,
+                        description: item.expeditionId.description,
+                        summary: item.summary,
+                        content: item.websiteArticleDraft,
+                        publishedAt: item.websiteArticlePublishedAt || item.updatedAt,
+                        category: "Expedition",
+                        tags: item.expeditionId.location ? [item.expeditionId.location] : [],
+                        location: item.expeditionId.location,
+                        region: item.expeditionId.region,
+                        year: item.expeditionId.year
+                    });
+                }
+            }
+        }
+
+        if (search && search.trim()) {
+            const term = search.trim().toLowerCase();
+            articles = articles.filter((a) => {
+                const titleMatch = a.title && a.title.toLowerCase().includes(term);
+                const descMatch = a.description && a.description.toLowerCase().includes(term);
+                const summaryMatch = a.summary && a.summary.toLowerCase().includes(term);
+                const contentMatch = a.content && a.content.toLowerCase().includes(term);
+                const categoryMatch = a.category && a.category.toLowerCase().includes(term);
+                const tagMatch = a.tags && a.tags.some(t => t.toLowerCase().includes(term));
+                return titleMatch || descMatch || summaryMatch || contentMatch || categoryMatch || tagMatch;
+            });
+        }
+
+        articles.sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
+
+        return res.status(200).json({
+            success: true,
+            articles
+        });
+    } catch (error) {
+        console.error("List published articles failed:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Unable to list published articles"
+        });
+    }
+};
+
 module.exports = {
+    listPublishedArticles,
     getArticle,
     getPublishedArticle,
     editArticle,

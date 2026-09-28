@@ -11,6 +11,7 @@ const { promisify } = require("node:util");
 const Groq = require("groq-sdk");
 const { toFile } = require("groq-sdk");
 const { PDFParse } = require("pdf-parse");
+const { BLUESKY_CHAR_LIMIT } = require("./bluesky.service");
 
 const execFileAsync = promisify(execFile);
 const GROQ_TEXT_MODEL = "openai/gpt-oss-120b";
@@ -67,24 +68,33 @@ const parseGeneratedContent = (content) => {
     }
 };
 
-const normalizeXPost = (content) => {
-    const normalized = String(content || "").replace(/\s+/g, " ").trim();
+// Matches the same emoji range the draft validation rejects, so a generated
+// draft is always saveable without a manual emoji sweep by the admin.
+const EMOJI_PATTERN = /[\u{1F000}-\u{1FAFF}]/gu;
+
+const normalizeBlueskyPost = (content) => {
+    // Emojis are never permitted in CryoVerse outreach copy, so they are
+    // stripped here rather than left to fail validation at save time.
+    const normalized = String(content || "")
+        .replace(EMOJI_PATTERN, "")
+        .replace(/\s+/g, " ")
+        .trim();
     if (!normalized) {
-        const error = new Error("Groq returned an empty X post draft");
+        const error = new Error("Groq returned an empty Bluesky post draft");
         error.statusCode = 502;
         throw error;
     }
-    if (normalized.length <= 280) {
+    if (normalized.length <= BLUESKY_CHAR_LIMIT) {
         return normalized;
     }
 
-    return `${normalized.slice(0, 277).trimEnd()}...`;
+    return `${normalized.slice(0, BLUESKY_CHAR_LIMIT - 3).trimEnd()}...`;
 };
 
 const generateContent = async (
     sourceContent,
     resource,
-    { generateWebsiteArticle = false, generateXPost = false } = {}
+    { generateWebsiteArticle = false, generateBlueskyPost = false } = {}
 ) => {
     const groq = new Groq({
         apiKey: getRequiredSetting("GROQ_API_KEY")
@@ -99,8 +109,8 @@ const generateContent = async (
         requestedOutputs.push("websiteArticleDraft");
     }
 
-    if (generateXPost) {
-        requestedOutputs.push("xPostDraft");
+    if (generateBlueskyPost) {
+        requestedOutputs.push("blueskyPostDraft");
     }
 
     const response = await groq.chat.completions.create({
@@ -122,7 +132,7 @@ const generateContent = async (
                     "Make summary substantially longer than the other required outputs. Structure summary as several coherent paragraphs, followed by concise factual points, and finish with a clear conclusion. Do not use unsupported details to make it longer.",
                     "The simplifiedExplanation should be clear and accessible; use short paragraphs and points only where they improve readability.",
                     "When websiteArticleDraft is requested, make it a detailed, substantially longer article while staying fully grounded in the source.",
-                    "When xPostDraft is requested, write a concise, professional X post draft of no more than 280 characters including spaces and hashtags, with no emojis, hype, or unsupported claims.",
+                    "When blueskyPostDraft is requested, write a concise, professional and factual Bluesky post draft of no more than 300 characters including spaces and hashtags. Use an institutional, measured tone aimed at a specialist scientific audience. Do not use emojis, hype, marketing language, calls to action, or claims that are not supported by the source material.",
                     `Return JSON with exactly these keys: ${requestedOutputs.join(", ")}.`,
                     "suggestedMetadata must be an object containing tags and any useful report metadata.",
                     "Do not include content for outputs that are not listed."
@@ -158,7 +168,7 @@ const generateContent = async (
 
     if (
         (generateWebsiteArticle && !generatedContent.websiteArticleDraft)
-        || (generateXPost && !generatedContent.xPostDraft)
+        || (generateBlueskyPost && !generatedContent.blueskyPostDraft)
     ) {
         const error = new Error("Groq did not return all requested AI content");
         error.statusCode = 502;
@@ -172,8 +182,8 @@ const generateContent = async (
         websiteArticleDraft: generateWebsiteArticle
             ? generatedContent.websiteArticleDraft
             : null,
-        xPostDraft: generateXPost
-            ? normalizeXPost(generatedContent.xPostDraft)
+        blueskyPostDraft: generateBlueskyPost
+            ? normalizeBlueskyPost(generatedContent.blueskyPostDraft)
             : null
     };
 };

@@ -4,12 +4,12 @@ import { Alert, Button, Card, Spinner } from '../ui'
 /**
  * Generates AI content for a resource or expedition.
  * Summary / simplified explanation / metadata are always requested.
- * Website article + X post drafts are admin-only extras (backend rejects
+ * Website article + Bluesky post drafts are admin-only extras (backend rejects
  * these from non-admins with a 403), so the checkboxes only render when
  * `isAdmin` is true.
  */
 export default function AIContentPanel({ title, description, generate, isAdmin = false, onGenerated }) {
-  const [options, setOptions] = useState({ generateWebsiteArticle: false, generateXPost: false })
+  const [options, setOptions] = useState({ generateWebsiteArticle: false, generateBlueskyPost: false })
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
   const [cached, setCached] = useState(false)
@@ -20,7 +20,7 @@ export default function AIContentPanel({ title, description, generate, isAdmin =
     setStatus('loading')
     setError(null)
     try {
-      const effectiveOptions = isAdmin ? options : { generateWebsiteArticle: false, generateXPost: false }
+      const effectiveOptions = isAdmin ? options : { generateWebsiteArticle: false, generateBlueskyPost: false }
       const result = await generate(effectiveOptions, { regenerate })
       const nextContent = result.aiContent || {}
       setContent(nextContent)
@@ -29,7 +29,7 @@ export default function AIContentPanel({ title, description, generate, isAdmin =
         summary: nextContent.summary || '',
         simplifiedExplanation: nextContent.simplifiedExplanation || '',
         websiteArticleDraft: nextContent.websiteArticleDraft || '',
-        xPostDraft: nextContent.xPostDraft || '',
+        blueskyPostDraft: nextContent.blueskyPostDraft || '',
       })
       setStatus('success')
       onGenerated?.(nextContent)
@@ -40,10 +40,10 @@ export default function AIContentPanel({ title, description, generate, isAdmin =
   }
 
   const hasWebsiteArticle = Boolean(content?.websiteArticleDraft)
-  const hasXPost = Boolean(content?.xPostDraft)
+  const hasBlueskyPost = Boolean(content?.blueskyPostDraft)
   const missingCachedDrafts = cached && (
     (options.generateWebsiteArticle && !hasWebsiteArticle) ||
-    (options.generateXPost && !hasXPost)
+    (options.generateBlueskyPost && !hasBlueskyPost)
   )
   function updateField(key, value) { setEdited((current) => ({ ...current, [key]: value })) }
 
@@ -51,7 +51,7 @@ export default function AIContentPanel({ title, description, generate, isAdmin =
     {description && <p className="text-muted">{description}</p>}
     {isAdmin && <>
       <label className="ai-panel__checkbox"><input type="checkbox" checked={options.generateWebsiteArticle} onChange={(e) => setOptions((current) => ({ ...current, generateWebsiteArticle: e.target.checked }))} />Generate website article</label>
-      <label className="ai-panel__checkbox"><input type="checkbox" checked={options.generateXPost} onChange={(e) => setOptions((current) => ({ ...current, generateXPost: e.target.checked }))} />Generate X post</label>
+      <label className="ai-panel__checkbox"><input type="checkbox" checked={options.generateBlueskyPost} onChange={(e) => setOptions((current) => ({ ...current, generateBlueskyPost: e.target.checked }))} />Generate Bluesky post</label>
     </>}
     <div className="ai-panel__actions">
       <Button type="button" loading={status === 'loading'} onClick={() => run(false)}>{status === 'loading' ? 'Generating…' : 'Generate AI content'}</Button>
@@ -68,8 +68,8 @@ export default function AIContentPanel({ title, description, generate, isAdmin =
       {content.suggestedMetadata && <div className="field"><span className="field__label">Suggested metadata</span><SuggestedMetadata data={content.suggestedMetadata} /></div>}
       {content.transcript && <EditableField id="ai-transcript" label="Transcript" value={content.transcript} rows={6} readOnly />}
       {isAdmin && hasWebsiteArticle && <EditableField id="ai-article" label="Website article draft" value={edited.websiteArticleDraft} onChange={(value) => updateField('websiteArticleDraft', value)} rows={8} />}
-      {isAdmin && hasXPost && <EditableField id="ai-x-post" label="X post draft" value={edited.xPostDraft} onChange={(value) => updateField('xPostDraft', value)} rows={5} />}
-      {isAdmin && (hasWebsiteArticle || hasXPost) && <p className="text-muted ai-panel__hint">Manage, edit, save and publish these drafts in the Website Article / X sections below.</p>}
+      {isAdmin && hasBlueskyPost && <EditableField id="ai-bluesky-post" label="Bluesky post draft" value={edited.blueskyPostDraft} onChange={(value) => updateField('blueskyPostDraft', value)} rows={5} />}
+      {isAdmin && (hasWebsiteArticle || hasBlueskyPost) && <p className="text-muted ai-panel__hint">Manage, edit, save and publish these drafts in the Website Article / Bluesky sections below.</p>}
     </div>}
   </Card>
 }
