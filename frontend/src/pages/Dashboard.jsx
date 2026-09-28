@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import { Alert, Badge, Button, Card, EmptyState, Spinner } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -11,8 +11,13 @@ export default function Dashboard() {
   const [resources, setResources] = useState(null)
   const [error, setError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
-  const load = useCallback(() => listMyResources().then(setResources).catch(setError), [])
+  const load = useCallback(() => {
+    if (user?.role !== 'contributor') return
+    listMyResources().then(setResources).catch(setError)
+  }, [user?.role])
   useEffect(() => { load() }, [load])
+
+  if (user?.role === 'admin') return <Navigate to="/admin" replace />
 
   async function handleDelete(id) {
     if (!window.confirm('Delete this resource? This cannot be undone.')) return

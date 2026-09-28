@@ -39,6 +39,12 @@ export async function updateResource(id, payload) {
   return resourceFrom(await api.put(`/repository/${encodeURIComponent(id)}`, payload))
 }
 
+export async function submitResource(id) {
+  const resource = resourceFrom(await api.post(`/repository/${encodeURIComponent(id)}/submit`))
+  if (!resource) throw new Error('The submission response did not include the resource.')
+  return resource
+}
+
 export async function deleteResource(id) {
   return api.delete(`/repository/${encodeURIComponent(id)}`)
 }
@@ -47,7 +53,7 @@ export async function generateResourceAIContent(id, options = {}, { regenerate =
   const suffix = regenerate ? '?regenerate=true' : ''
   const data = await api.post(`/repository/${encodeURIComponent(id)}/ai-content${suffix}`, {
     generateWebsiteArticle: Boolean(options.generateWebsiteArticle),
-    generateLinkedInPost: Boolean(options.generateLinkedInPost),
+    generateXPost: Boolean(options.generateXPost),
   })
   return { cached: Boolean(data?.cached), aiContent: data?.aiContent || null }
 }
